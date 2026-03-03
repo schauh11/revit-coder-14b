@@ -1,0 +1,282 @@
+[
+  {
+    "id": "rc01",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code for a FilteredElementCollector that retrieves all wall instances in the active document and returns them as a List<Element>. Write code only. No explanation.",
+    "expected_signals": ["FilteredElementCollector", "BuiltInCategory", "OST_Walls", "WhereElementIsNotElementType", "ToElements", "List"]
+  },
+  {
+    "id": "rc02",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to read the area of every room in the model using BuiltInParameter.ROOM_AREA, convert from internal units (square feet) to square meters, and return a Dictionary<string, double> mapping room name to area in m\u00b2. Write code only. No explanation.",
+    "expected_signals": ["FilteredElementCollector", "BuiltInParameter", "ROOM_AREA", "AsDouble", "UnitUtils", "ConvertFromInternalUnits", "Dictionary", "BuiltInCategory.OST_Rooms"]
+  },
+  {
+    "id": "rc03",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write a complete IExternalCommand implementation that creates a new wall along a line from (0,0,0) to (20,0,0) on Level 1. Include the Transaction, level lookup, and error handling with TaskDialog. Write code only. No explanation.",
+    "expected_signals": ["IExternalCommand", "Execute", "Transaction", "Wall.Create", "Line.CreateBound", "XYZ", "Level", "FilteredElementCollector", "t.Start", "t.Commit", "TaskDialog", "Result.Succeeded"]
+  },
+  {
+    "id": "rc04",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Validate this Revit API code and list every bug in code comments, then show the corrected version:\n```csharp\npublic void RenameRooms(Document doc)\n{\n    var rooms = new FilteredElementCollector(doc)\n        .OfCategory(BuiltInCategory.OST_Rooms)\n        .ToElements();\n    foreach (var room in rooms)\n    {\n        room.get_Parameter(BuiltInParameter.ROOM_NAME).Set(\"Updated\");\n    }\n}\n```\nWrite code only. No explanation.",
+    "expected_signals": ["Transaction", "null", "WhereElementIsNotElementType", "IsReadOnly", "t.Start", "t.Commit"]
+  },
+  {
+    "id": "rc05",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to collect all floor instances in the model, group them by floor type name, and return a Dictionary<string, int> with the count of each type. Write code only. No explanation.",
+    "expected_signals": ["FilteredElementCollector", "BuiltInCategory.OST_Floors", "WhereElementIsNotElementType", "GetTypeId", "doc.GetElement", "Name", "Dictionary", "GroupBy"]
+  },
+  {
+    "id": "rc06",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to place a family instance at a given XYZ point. Load the family from a .rfa file path if not already loaded, find the first available FamilySymbol, activate it, and place it on Level 1 inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["FamilySymbol", "Activate", "NewFamilyInstance", "doc.LoadFamily", "Transaction", "Level", "FilteredElementCollector", "t.Start", "t.Commit", "StructuralType"]
+  },
+  {
+    "id": "rc07",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to extract the solid geometry from a wall element using the GeometryElement API. Get the geometry with ComputeReferences, iterate through GeometryObject instances, handle GeometryInstance by getting instance geometry, and return the first Solid with non-zero volume. Write code only. No explanation.",
+    "expected_signals": ["GeometryElement", "Options", "ComputeReferences", "GetGeometryObjectFromReference", "GeometryInstance", "GetInstanceGeometry", "Solid", "Volume", "OfType", "DetailLevel"]
+  },
+  {
+    "id": "rc08",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a new ViewPlan for Level 1 using a ViewFamilyType, then create a new ViewSheet with a titleblock, and place the view on the sheet using Viewport.Create. All inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["ViewPlan", "ViewFamilyType", "ViewSheet", "Viewport", "Create", "Transaction", "FilteredElementCollector", "Level", "TitleBlock", "OfClass"]
+  },
+  {
+    "id": "rc09",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to get all doors in the model, then for each door read its width and height parameters using BuiltInParameter, and return a list of strings formatted as \"DoorMark: W x H mm\". Write code only. No explanation.",
+    "expected_signals": ["FilteredElementCollector", "BuiltInCategory.OST_Doors", "WhereElementIsNotElementType", "BuiltInParameter", "DOOR_WIDTH", "DOOR_HEIGHT", "AsDouble", "UnitUtils", "List"]
+  },
+  {
+    "id": "rc10",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code implementing an IUpdater that monitors when any wall's Location property changes, and automatically logs the wall's ElementId and new location curve endpoints to a text file. Include the registration in IExternalApplication.OnStartup. Write code only. No explanation.",
+    "expected_signals": ["IUpdater", "GetUpdaterId", "Execute", "GetAddedElementIds", "GetModifiedElementIds", "UpdaterRegistry", "RegisterUpdater", "AddTrigger", "ChangeType", "LocationCurve", "IExternalApplication"]
+  },
+  {
+    "id": "rc11",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to collect all Revit links (RevitLinkInstance) in the current document, get each linked document, then count the total number of walls across all linked models. Return a Dictionary<string, int> mapping link name to wall count. Write code only. No explanation.",
+    "expected_signals": ["RevitLinkInstance", "FilteredElementCollector", "GetLinkDocument", "BuiltInCategory.OST_Walls", "WhereElementIsNotElementType", "Dictionary", "Name", "Count"]
+  },
+  {
+    "id": "rc12",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to move a selected element by a vector (10, 5, 0) feet using ElementTransformUtils.MoveElement. Get the currently selected element from UIDocument.Selection, validate it exists, and perform the move inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["ElementTransformUtils", "MoveElement", "Selection", "GetElementIds", "XYZ", "Transaction", "t.Start", "t.Commit", "UIDocument", "ElementId"]
+  },
+  {
+    "id": "rc13",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to create a shared parameter from an external definition file, add it to the Walls category as an instance parameter under the Data group, and bind it to the project using BindingMap. Include creating the DefinitionFile and DefinitionGroup. Write code only. No explanation.",
+    "expected_signals": ["DefinitionFile", "ExternalDefinitionCreationOptions", "DefinitionGroup", "ExternalDefinition", "CategorySet", "InstanceBinding", "BindingMap", "Transaction", "ParameterBindings", "OpenSharedParameterFile"]
+  },
+  {
+    "id": "rc14",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to get all rooms in the model, extract each room's boundary segments using GetBoundarySegments with SpatialElementBoundaryOptions, and return a Dictionary<string, List<Curve>> mapping room name to its boundary curves. Write code only. No explanation.",
+    "expected_signals": ["Room", "GetBoundarySegments", "SpatialElementBoundaryOptions", "BoundarySegment", "GetCurve", "Curve", "Dictionary", "FilteredElementCollector", "BuiltInCategory.OST_Rooms"]
+  },
+  {
+    "id": "rc15",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to find all curtain walls in the model, access their CurtainGrid, iterate through panel and mullion ElementIds, and return a summary of panel count and mullion count per curtain wall. Write code only. No explanation.",
+    "expected_signals": ["CurtainGrid", "GetPanelIds", "GetMullionIds", "Wall", "FilteredElementCollector", "BuiltInCategory.OST_Walls", "WallType", "CurtainWallType", "Dictionary"]
+  },
+  {
+    "id": "rc16",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to find all duct instances in the model, get each duct's ConnectorManager, iterate through its Connectors, find connected elements via AllRefs, and build an adjacency list of connected duct ElementIds. Write code only. No explanation.",
+    "expected_signals": ["ConnectorManager", "Connector", "ConnectorSet", "AllRefs", "Duct", "FilteredElementCollector", "BuiltInCategory.OST_DuctCurves", "ElementId", "Domain", "MEPCurve"]
+  },
+  {
+    "id": "rc17",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to find a ViewSchedule by name, read its TableData including header and body sections, and return a List<Dictionary<string, string>> where each dictionary maps column header to cell value for that row. Write code only. No explanation.",
+    "expected_signals": ["ViewSchedule", "TableData", "GetTableData", "SectionData", "GetSectionData", "SectionType", "GetCellText", "NumberOfRows", "NumberOfColumns", "FilteredElementCollector"]
+  },
+  {
+    "id": "rc18",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to collect all wall instances that were created in a specific phase by filtering on the PHASE_CREATED built-in parameter. Get the phase from the active view. Write code only. No explanation.",
+    "expected_signals": ["FilteredElementCollector", "Phase", "BuiltInParameter", "PHASE_CREATED", "View", "WhereElementIsNotElementType", "BuiltInCategory.OST_Walls", "AsElementId"]
+  },
+  {
+    "id": "rc19",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to check if the document is workshared, get all worksets using FilteredWorksetCollector, and assign all walls to a workset named 'Structural' by setting the ELEM_PARTITION_PARAM inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["FilteredWorksetCollector", "WorksetKind", "Workset", "IsWorkshared", "ELEM_PARTITION_PARAM", "WorksetId", "FilteredElementCollector", "Transaction", "BuiltInCategory.OST_Walls"]
+  },
+  {
+    "id": "rc20",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a linear dimension along a wall in the active view. Get the wall's LocationCurve, create a ReferenceArray from the wall's end references, and use doc.Create.NewDimension to place the dimension. Write code only. No explanation.",
+    "expected_signals": ["Dimension", "NewDimension", "ReferenceArray", "LocationCurve", "Line", "Reference", "View", "Transaction", "Curve"]
+  },
+  {
+    "id": "rc21",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a new Material in the document, set its color to red (255,0,0), assign a solid fill pattern to its surface foreground, and apply it as the structural material of an existing wall via parameter. Write code only. No explanation.",
+    "expected_signals": ["Material", "Create", "Color", "FillPatternElement", "GetSolidFillPatternId", "SurfaceForegroundPatternId", "SurfaceForegroundPatternColor", "Transaction", "FilteredElementCollector"]
+  },
+  {
+    "id": "rc22",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to copy a set of elements from their current position to a new location offset by (10, 0, 0) using ElementTransformUtils.CopyElements with a translation transform inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["ElementTransformUtils", "CopyElements", "Transform", "Translation", "XYZ", "Transaction", "ElementId", "ICollection"]
+  },
+  {
+    "id": "rc23",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to create rebar in a concrete beam element using Rebar.CreateFromCurves. Define a rectangular stirrup shape with four line segments, specify the RebarBarType and RebarHookType, set RebarStyle to Stirrup, and place it inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["Rebar", "CreateFromCurves", "RebarBarType", "RebarHookType", "RebarHookOrientation", "RebarStyle", "FilteredElementCollector", "Line", "Transaction", "XYZ"]
+  },
+  {
+    "id": "rc24",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to place room tags on all untagged rooms in the active view using IndependentTag.Create. Get each room's location point, use TagMode.TM_ADDBY_CATEGORY, and set horizontal orientation. Write code only. No explanation.",
+    "expected_signals": ["IndependentTag", "Create", "TagMode", "TagOrientation", "Reference", "LocationPoint", "Point", "FilteredElementCollector", "Transaction", "View"]
+  },
+  {
+    "id": "rc25",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to get the user's current selection from UIDocument, create a Group from the selected elements using doc.Create.NewGroup, and show the group name in a TaskDialog. Include a Transaction. Write code only. No explanation.",
+    "expected_signals": ["Group", "NewGroup", "Selection", "GetElementIds", "ICollection", "ElementId", "Transaction", "TaskDialog", "UIDocument"]
+  },
+  {
+    "id": "rc26",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to access the ProjectInfo object from the document and read the BuildingName, Address, and Number properties. Display them in a TaskDialog. Write code only. No explanation.",
+    "expected_signals": ["ProjectInfo", "doc.ProjectInformation", "BuildingName", "Address", "Number", "TaskDialog"]
+  },
+  {
+    "id": "rc27",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to create a ModelLine in the active document. Create a SketchPlane from a Plane at the origin, then use doc.Create.NewModelCurve to draw a line from (0,0,0) to (10,0,0). Include a Transaction. Write code only. No explanation.",
+    "expected_signals": ["SketchPlane", "Plane", "NewModelCurve", "Line.CreateBound", "XYZ", "Transaction", "doc.Create", "ModelCurve"]
+  },
+  {
+    "id": "rc28",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to duplicate an existing ViewPlan using View.Duplicate with ViewDuplicateOption.Duplicate, then rename the duplicated view by setting its ViewName property. Include a Transaction. Write code only. No explanation.",
+    "expected_signals": ["Duplicate", "ViewDuplicateOption", "ViewPlan", "ViewName", "Transaction", "FilteredElementCollector", "ElementId", "doc.GetElement"]
+  },
+  {
+    "id": "rc29",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code implementing an IExternalEventHandler for executing Revit API calls from a modeless dialog. Show the handler class with Execute method, ExternalEvent.Create registration, and how to call Raise() from a button click. Include a Transaction inside the handler. Write code only. No explanation.",
+    "expected_signals": ["IExternalEventHandler", "Execute", "ExternalEvent", "Create", "Raise", "UIApplication", "Transaction", "GetName", "modeless"]
+  },
+  {
+    "id": "rc30",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code using ParameterFilterRuleFactory to create a FilterRule that finds walls where the Mark parameter equals a specific string value. Use it with a ParameterValueProvider and ElementParameterFilter in a FilteredElementCollector. Write code only. No explanation.",
+    "expected_signals": ["ParameterFilterRuleFactory", "FilterRule", "ParameterValueProvider", "ElementParameterFilter", "FilteredElementCollector", "BuiltInParameter", "ALL_MODEL_MARK", "BuiltInCategory.OST_Walls"]
+  },
+  {
+    "id": "rc31",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to set a section box on a 3D view. Create a BoundingBoxXYZ with specific Min and Max points, find a View3D in the document, enable and assign the section box using View3D.SetSectionBox inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["View3D", "BoundingBoxXYZ", "SetSectionBox", "IsSectionBoxActive", "Min", "Max", "XYZ", "Transaction", "FilteredElementCollector"]
+  },
+  {
+    "id": "rc32",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a new Level at a specified elevation using Level.Create, then create multiple Grid lines along the X axis using Grid.Create with Line geometry. Both operations inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["Level.Create", "Grid.Create", "Line.CreateBound", "XYZ", "Transaction", "Elevation", "FilteredElementCollector"]
+  },
+  {
+    "id": "rc33",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code using Extensible Storage to create a Schema with SchemaBuilder, add a string field and a double field, then store data on a wall element using Entity and retrieve it back. Include GUID, schema name, and a Transaction. Write code only. No explanation.",
+    "expected_signals": ["SchemaBuilder", "Schema", "Entity", "FieldBuilder", "SetEntity", "GetEntity", "Guid", "Transaction", "Element", "Get", "Set"]
+  },
+  {
+    "id": "rc34",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a ParameterFilterElement with filter rules, apply it to the active view using View.AddFilter, and set color overrides for matching elements using OverrideGraphicSettings with SetProjectionLineColor. Include a Transaction. Write code only. No explanation.",
+    "expected_signals": ["ParameterFilterElement", "FilterRule", "ParameterFilterRuleFactory", "OverrideGraphicSettings", "SetProjectionLineColor", "Color", "AddFilter", "SetFilterOverrides", "View", "Transaction"]
+  },
+  {
+    "id": "rc35",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code using ElementIntersectsElementFilter to find all elements that physically intersect a selected element. Get the selected element's solid geometry, create the intersection filter, and return a list of intersecting ElementIds with their category names. Write code only. No explanation.",
+    "expected_signals": ["ElementIntersectsElementFilter", "FilteredElementCollector", "Solid", "GeometryElement", "Options", "ExclusionFilter", "ElementId", "Category", "Name"]
+  },
+  {
+    "id": "rc36",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to open a family document for editing using doc.EditFamily, use FamilyManager to add a new type parameter of type Length, set the parameter value, then close the family document and reload it into the project using LoadFamily. Write code only. No explanation.",
+    "expected_signals": ["EditFamily", "FamilyManager", "AddParameter", "FamilyDocument", "LoadFamily", "FamilyParameter", "Set", "Transaction", "BuiltInParameterGroup", "ParameterType"]
+  },
+  {
+    "id": "rc37",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code using a TransactionGroup to wrap multiple sub-transactions. Perform two separate modifications (e.g., move a wall then change its type), and demonstrate rolling back the entire group if the second sub-transaction fails. Include TransactionGroup.Assimilate on success. Write code only. No explanation.",
+    "expected_signals": ["TransactionGroup", "Transaction", "Start", "Commit", "RollBack", "Assimilate", "TransactionStatus", "t.Start", "t.Commit"]
+  },
+  {
+    "id": "rc38",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to export the active 3D view to DWG format using doc.Export. Configure DWGExportOptions with specific settings for layers, colors, and file version. Specify the output folder path and filename. Write code only. No explanation.",
+    "expected_signals": ["Export", "DWGExportOptions", "ExportColorMode", "PropOverrides", "LayerMapping", "FileVersion", "View3D", "Transaction", "ViewSet"]
+  },
+  {
+    "id": "rc39",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to find wall endpoints using LocationCurve, then use WallUtils.DisallowWallJoinAtEnd and WallUtils.AllowWallJoinAtEnd to control wall join behavior at each end. Iterate through all walls in the model and disallow joins at both ends inside a Transaction. Write code only. No explanation.",
+    "expected_signals": ["WallUtils", "DisallowWallJoinAtEnd", "AllowWallJoinAtEnd", "LocationCurve", "Wall", "FilteredElementCollector", "Transaction", "Curve", "GetEndPoint"]
+  },
+  {
+    "id": "rc40",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to build a chained logical filter combining an ElementCategoryFilter for walls, an ElementParameterFilter on the Comments parameter, and a BoundingBoxIntersectsFilter with a specified Outline. Combine them using LogicalAndFilter and apply to a FilteredElementCollector. Write code only. No explanation.",
+    "expected_signals": ["LogicalAndFilter", "ElementCategoryFilter", "ElementParameterFilter", "BoundingBoxIntersectsFilter", "Outline", "FilteredElementCollector", "BuiltInCategory.OST_Walls", "ParameterFilterRuleFactory", "XYZ"]
+  }
+]

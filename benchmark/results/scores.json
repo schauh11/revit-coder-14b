@@ -1,0 +1,797 @@
+{
+  "timestamp": "2026-03-01T20:06:53.062106",
+  "total_questions": 40,
+  "overall": {
+    "ollama_avg": 0.7995,
+    "claude_avg": 0.7932,
+    "ollama_wins": 25,
+    "claude_wins": 15,
+    "ties": 0
+  },
+  "by_domain": {
+    "revit_csharp": {
+      "count": 40,
+      "ollama_avg": 0.7995,
+      "claude_avg": 0.7932
+    }
+  },
+  "by_difficulty": {
+    "easy": {
+      "count": 9,
+      "ollama_avg": 0.8003,
+      "claude_avg": 0.7961
+    },
+    "hard": {
+      "count": 12,
+      "ollama_avg": 0.7359,
+      "claude_avg": 0.7786
+    },
+    "medium": {
+      "count": 19,
+      "ollama_avg": 0.8394,
+      "claude_avg": 0.8009
+    }
+  },
+  "scores": [
+    {
+      "id": "rc01",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code for a FilteredElementCollector that retrieves all wall instances in the active documen",
+      "ollama": {
+        "signal": 0.5,
+        "quality": 0.3,
+        "completeness": 0.625,
+        "composite": 0.4775
+      },
+      "claude": {
+        "signal": 0.6667,
+        "quality": 0.4167,
+        "completeness": 0.7,
+        "composite": 0.6017
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc02",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to read the area of every room in the model using BuiltInParameter.ROOM_AREA, convert ",
+      "ollama": {
+        "signal": 1.0,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.9225
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.7575
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc03",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write a complete IExternalCommand implementation that creates a new wall along a line from (0,0,0) t",
+      "ollama": {
+        "signal": 0.8333,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8808
+      },
+      "claude": {
+        "signal": 0.8333,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8308
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc04",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Validate this Revit API code and list every bug in code comments, then show the corrected version:\n`",
+      "ollama": {
+        "signal": 0.3333,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.6158
+      },
+      "claude": {
+        "signal": 0.6667,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.7642
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc05",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to collect all floor instances in the model, group them by floor type name, and return",
+      "ollama": {
+        "signal": 0.625,
+        "quality": 0.9167,
+        "completeness": 0.775,
+        "composite": 0.7575
+      },
+      "claude": {
+        "signal": 0.5,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.5575
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc06",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to place a family instance at a given XYZ point. Load the family from a .rfa file path",
+      "ollama": {
+        "signal": 0.8,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8675
+      },
+      "claude": {
+        "signal": 0.8,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8175
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc07",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to extract the solid geometry from a wall element using the GeometryElement API. Get t",
+      "ollama": {
+        "signal": 0.7,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.8025
+      },
+      "claude": {
+        "signal": 0.8,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.6775
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc08",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to create a new ViewPlan for Level 1 using a ViewFamilyType, then create a new ViewShe",
+      "ollama": {
+        "signal": 1.0,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.9475
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc09",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to get all doors in the model, then for each door read its width and height parameters",
+      "ollama": {
+        "signal": 0.4444,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.7253
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.7575
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc10",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code implementing an IUpdater that monitors when any wall's Location property changes, and ",
+      "ollama": {
+        "signal": 0.0,
+        "quality": 0.75,
+        "completeness": 0.875,
+        "composite": 0.4875
+      },
+      "claude": {
+        "signal": 0.9091,
+        "quality": 0.5833,
+        "completeness": 0.825,
+        "composite": 0.7861
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc11",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to collect all Revit links (RevitLinkInstance) in the current document, get each linke",
+      "ollama": {
+        "signal": 0.75,
+        "quality": 0.9167,
+        "completeness": 0.775,
+        "composite": 0.8075
+      },
+      "claude": {
+        "signal": 0.875,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.7075
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc12",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to move a selected element by a vector (10, 5, 0) feet using ElementTransformUtils.Mov",
+      "ollama": {
+        "signal": 0.8,
+        "quality": 1.0,
+        "completeness": 0.775,
+        "composite": 0.8525
+      },
+      "claude": {
+        "signal": 0.8,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8025
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc13",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to create a shared parameter from an external definition file, add it to the Walls cat",
+      "ollama": {
+        "signal": 0.4,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.6825
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc14",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to get all rooms in the model, extract each room's boundary segments using GetBoundary",
+      "ollama": {
+        "signal": 1.0,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.9225
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.4167,
+        "completeness": 0.825,
+        "composite": 0.7725
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc15",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to find all curtain walls in the model, access their CurtainGrid, iterate through pane",
+      "ollama": {
+        "signal": 0.4444,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.7253
+      },
+      "claude": {
+        "signal": 0.7778,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.6686
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc16",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to find all duct instances in the model, get each duct's ConnectorManager, iterate thr",
+      "ollama": {
+        "signal": 0.6,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.7625
+      },
+      "claude": {
+        "signal": 0.8,
+        "quality": 0.5833,
+        "completeness": 0.825,
+        "composite": 0.7425
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc17",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to find a ViewSchedule by name, read its TableData including header and body sections,",
+      "ollama": {
+        "signal": 0.0,
+        "quality": 0.75,
+        "completeness": 0.875,
+        "composite": 0.4875
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.4167,
+        "completeness": 0.825,
+        "composite": 0.7725
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc18",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to collect all wall instances that were created in a specific phase by filtering on th",
+      "ollama": {
+        "signal": 0.625,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.7725
+      },
+      "claude": {
+        "signal": 0.875,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.7075
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc19",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to check if the document is workshared, get all worksets using FilteredWorksetCollecto",
+      "ollama": {
+        "signal": 0.6667,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8142
+      },
+      "claude": {
+        "signal": 0.7778,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8086
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc20",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to create a linear dimension along a wall in the active view. Get the wall's LocationC",
+      "ollama": {
+        "signal": 0.8889,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.8781
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc21",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to create a new Material in the document, set its color to red (255,0,0), assign a sol",
+      "ollama": {
+        "signal": 0.6667,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8142
+      },
+      "claude": {
+        "signal": 0.8889,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8531
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc22",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to copy a set of elements from their current position to a new location offset by (10,",
+      "ollama": {
+        "signal": 1.0,
+        "quality": 1.0,
+        "completeness": 0.775,
+        "composite": 0.9325
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.7,
+        "composite": 0.86
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc23",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to create rebar in a concrete beam element using Rebar.CreateFromCurves. Define a rect",
+      "ollama": {
+        "signal": 0.5,
+        "quality": 0.9167,
+        "completeness": 0.775,
+        "composite": 0.7075
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc24",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to place room tags on all untagged rooms in the active view using IndependentTag.Creat",
+      "ollama": {
+        "signal": 0.9,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.9075
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc25",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to get the user's current selection from UIDocument, create a Group from the selected ",
+      "ollama": {
+        "signal": 0.7778,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8586
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8825
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc26",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to access the ProjectInfo object from the document and read the BuildingName, Address,",
+      "ollama": {
+        "signal": 1.0,
+        "quality": 0.9167,
+        "completeness": 0.775,
+        "composite": 0.9075
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.6667,
+        "completeness": 0.775,
+        "composite": 0.8325
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc27",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to create a ModelLine in the active document. Create a SketchPlane from a Plane at the",
+      "ollama": {
+        "signal": 1.0,
+        "quality": 1.0,
+        "completeness": 0.775,
+        "composite": 0.9325
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8825
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc28",
+      "domain": "revit_csharp",
+      "difficulty": "easy",
+      "question": "Write C# code to duplicate an existing ViewPlan using View.Duplicate with ViewDuplicateOption.Duplic",
+      "ollama": {
+        "signal": 0.625,
+        "quality": 1.0,
+        "completeness": 0.775,
+        "composite": 0.7825
+      },
+      "claude": {
+        "signal": 0.875,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8325
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc29",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code implementing an IExternalEventHandler for executing Revit API calls from a modeless di",
+      "ollama": {
+        "signal": 0.7778,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8586
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc30",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code using ParameterFilterRuleFactory to create a FilterRule that finds walls where the Mar",
+      "ollama": {
+        "signal": 0.75,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.8225
+      },
+      "claude": {
+        "signal": 0.75,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.6575
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc31",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to set a section box on a 3D view. Create a BoundingBoxXYZ with specific Min and Max p",
+      "ollama": {
+        "signal": 0.8889,
+        "quality": 1.0,
+        "completeness": 0.775,
+        "composite": 0.8881
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8825
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc32",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to create a new Level at a specified elevation using Level.Create, then create multipl",
+      "ollama": {
+        "signal": 0.8571,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8904
+      },
+      "claude": {
+        "signal": 0.8571,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8254
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc33",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code using Extensible Storage to create a Schema with SchemaBuilder, add a string field and",
+      "ollama": {
+        "signal": 0.8182,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.8498
+      },
+      "claude": {
+        "signal": 0.8182,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8248
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc34",
+      "domain": "revit_csharp",
+      "difficulty": "medium",
+      "question": "Write C# code to create a ParameterFilterElement with filter rules, apply it to the active view usin",
+      "ollama": {
+        "signal": 0.8,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8675
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.8975
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc35",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code using ElementIntersectsElementFilter to find all elements that physically intersect a ",
+      "ollama": {
+        "signal": 0.5556,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.7447
+      },
+      "claude": {
+        "signal": 0.5556,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.5797
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc36",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to open a family document for editing using doc.EditFamily, use FamilyManager to add a",
+      "ollama": {
+        "signal": 0.8,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8675
+      },
+      "claude": {
+        "signal": 0.7,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.7775
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc37",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code using a TransactionGroup to wrap multiple sub-transactions. Perform two separate modif",
+      "ollama": {
+        "signal": 0.6667,
+        "quality": 1.0,
+        "completeness": 0.825,
+        "composite": 0.8142
+      },
+      "claude": {
+        "signal": 0.6667,
+        "quality": 0.8333,
+        "completeness": 0.825,
+        "composite": 0.7642
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc38",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to export the active 3D view to DWG format using doc.Export. Configure DWGExportOption",
+      "ollama": {
+        "signal": 0.5556,
+        "quality": 0.9167,
+        "completeness": 0.825,
+        "composite": 0.7447
+      },
+      "claude": {
+        "signal": 0.7778,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.7936
+      },
+      "winner": "claude"
+    },
+    {
+      "id": "rc39",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to find wall endpoints using LocationCurve, then use WallUtils.DisallowWallJoinAtEnd a",
+      "ollama": {
+        "signal": 0.8889,
+        "quality": 1.0,
+        "completeness": 0.775,
+        "composite": 0.8881
+      },
+      "claude": {
+        "signal": 0.8889,
+        "quality": 0.8333,
+        "completeness": 0.775,
+        "composite": 0.8381
+      },
+      "winner": "ollama"
+    },
+    {
+      "id": "rc40",
+      "domain": "revit_csharp",
+      "difficulty": "hard",
+      "question": "Write C# code to build a chained logical filter combining an ElementCategoryFilter for walls, an Ele",
+      "ollama": {
+        "signal": 0.8889,
+        "quality": 0.4167,
+        "completeness": 0.775,
+        "composite": 0.7131
+      },
+      "claude": {
+        "signal": 1.0,
+        "quality": 0.4167,
+        "completeness": 1.0,
+        "composite": 0.825
+      },
+      "winner": "claude"
+    }
+  ]
+}

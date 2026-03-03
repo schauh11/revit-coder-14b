@@ -1,0 +1,66 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Model weights (use HuggingFace)
+models/
+*.gguf
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+
+# Logs
+logs/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Training data (lives in revit-trained-llm repo)
+data/
+data_clean/
+data_raw/
+dataset/
+datasets/
+*.jsonl
+
+# Training outputs
+checkpoints/
+runs/
+wandb/
+tensorboard/
+
+# Script outputs
+outputs/
+tmp/
+temp/
+
+# Claude Code (local development only)
+.claude/

@@ -1,0 +1,801 @@
+[
+  {
+    "id": "rc01",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code for a FilteredElementCollector that retrieves all wall instances in the active document and returns them as a List<Element>. Write code only. No explanation.",
+    "expected_signals": [
+      "FilteredElementCollector",
+      "BuiltInCategory",
+      "OST_Walls",
+      "WhereElementIsNotElementType",
+      "ToElements",
+      "List"
+    ],
+    "response": "```csharp\nFilteredElementCollector collector = new FilteredElementCollector(doc);\nList<Element> walls = collector\n    .OfClass(typeof(Wall))\n    .WhereElementIsNotElementType()\n    .ToElements()\n    .ToList();\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533285"
+  },
+  {
+    "id": "rc02",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to read the area of every room in the model using BuiltInParameter.ROOM_AREA, convert from internal units (square feet) to square meters, and return a Dictionary<string, double> mapping room name to area in m\u00b2. Write code only. No explanation.",
+    "expected_signals": [
+      "FilteredElementCollector",
+      "BuiltInParameter",
+      "ROOM_AREA",
+      "AsDouble",
+      "UnitUtils",
+      "ConvertFromInternalUnits",
+      "Dictionary",
+      "BuiltInCategory.OST_Rooms"
+    ],
+    "response": "```csharp\npublic Dictionary<string, double> GetRoomAreas(Document doc)\n{\n    var result = new Dictionary<string, double>();\n    var rooms = new FilteredElementCollector(doc)\n        .OfCategory(BuiltInCategory.OST_Rooms)\n        .WhereElementIsNotElementType()\n        .ToElements();\n\n    foreach (var elem in rooms)\n    {\n        Room room = elem as Room;\n        if (room == null || room.Area <= 0) continue;\n\n        Parameter areaParam = room.get_Parameter(BuiltInParameter.ROOM_AREA);\n        double sqFt = areaParam.AsDouble();\n        double sqM = UnitUtils.ConvertFromInternalUnits(sqFt, UnitTypeId.SquareMeters);\n\n        string name = room.get_Parameter(BuiltInParameter.ROOM_NAME).AsString() ?? \"Unnamed\";\n        if (result.ContainsKey(name))\n            name = name + \" (\" + room.Id.IntegerValue + \")\";\n        result[name] = sqM;\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533297"
+  },
+  {
+    "id": "rc03",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write a complete IExternalCommand implementation that creates a new wall along a line from (0,0,0) to (20,0,0) on Level 1. Include the Transaction, level lookup, and error handling with TaskDialog. Write code only. No explanation.",
+    "expected_signals": [
+      "IExternalCommand",
+      "Execute",
+      "Transaction",
+      "Wall.Create",
+      "Line.CreateBound",
+      "XYZ",
+      "Level",
+      "FilteredElementCollector",
+      "t.Start",
+      "t.Commit",
+      "TaskDialog",
+      "Result.Succeeded"
+    ],
+    "response": "```csharp\n[Transaction(TransactionMode.Manual)]\npublic class CreateWallCommand : IExternalCommand\n{\n    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)\n    {\n        UIDocument uidoc = commandData.Application.ActiveUIDocument;\n        Document doc = uidoc.Document;\n\n        try\n        {\n            Level level1 = new FilteredElementCollector(doc)\n                .OfClass(typeof(Level))\n                .Cast<Level>()\n                .FirstOrDefault(l => l.Name == \"Level 1\");\n\n            if (level1 == null)\n            {\n                TaskDialog.Show(\"Error\", \"Level 1 not found.\");\n                return Result.Failed;\n            }\n\n            Line line = Line.CreateBound(new XYZ(0, 0, 0), new XYZ(20, 0, 0));\n\n            using (Transaction tx = new Transaction(doc, \"Create Wall\"))\n            {\n                tx.Start();\n                Wall wall = Wall.Create(doc, line, level1.Id, false);\n                tx.Commit();\n            }\n\n            TaskDialog.Show(\"Success\", \"Wall created successfully.\");\n            return Result.Succeeded;\n        }\n        catch (Exception ex)\n        {\n            message = ex.Message;\n            TaskDialog.Show(\"Error\", ex.Message);\n            return Result.Failed;\n        }\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533301"
+  },
+  {
+    "id": "rc04",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Validate this Revit API code and list every bug in code comments, then show the corrected version:\n```csharp\npublic void RenameRooms(Document doc)\n{\n    var rooms = new FilteredElementCollector(doc)\n        .OfCategory(BuiltInCategory.OST_Rooms)\n        .ToElements();\n    foreach (var room in rooms)\n    {\n        room.get_Parameter(BuiltInParameter.ROOM_NAME).Set(\"Updated\");\n    }\n}\n```\nWrite code only. No explanation.",
+    "expected_signals": [
+      "Transaction",
+      "null",
+      "WhereElementIsNotElementType",
+      "IsReadOnly",
+      "t.Start",
+      "t.Commit"
+    ],
+    "response": "```csharp\n// BUGS:\n// 1. No Transaction wrapping the parameter Set() calls - modifying parameters requires a Transaction\n// 2. No null check on the parameter returned by get_Parameter - it could be null\n// 3. No check if the parameter is read-only\n// 4. Should use WhereElementIsNotElementType() to get room instances only\n// 5. Should filter out unplaced rooms (Area <= 0)\n\npublic void RenameRooms(Document doc)\n{\n    var rooms = new FilteredElementCollector(doc)\n        .OfCategory(BuiltInCategory.OST_Rooms)\n        .WhereElementIsNotElementType()\n        .ToElements();\n\n    using (Transaction tx = new Transaction(doc, \"Rename Rooms\"))\n    {\n        tx.Start();\n        foreach (var room in rooms)\n        {\n            if ((room as Room)?.Area <= 0) continue;\n\n            Parameter nameParam = room.get_Parameter(BuiltInParameter.ROOM_NAME);\n            if (nameParam != null && !nameParam.IsReadOnly)\n            {\n                nameParam.Set(\"Updated\");\n            }\n        }\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533303"
+  },
+  {
+    "id": "rc05",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to collect all floor instances in the model, group them by floor type name, and return a Dictionary<string, int> with the count of each type. Write code only. No explanation.",
+    "expected_signals": [
+      "FilteredElementCollector",
+      "BuiltInCategory.OST_Floors",
+      "WhereElementIsNotElementType",
+      "GetTypeId",
+      "doc.GetElement",
+      "Name",
+      "Dictionary",
+      "GroupBy"
+    ],
+    "response": "```csharp\npublic Dictionary<string, int> GetFloorCountsByType(Document doc)\n{\n    var floors = new FilteredElementCollector(doc)\n        .OfClass(typeof(Floor))\n        .WhereElementIsNotElementType()\n        .Cast<Floor>();\n\n    var result = new Dictionary<string, int>();\n    foreach (var floor in floors)\n    {\n        string typeName = floor.FloorType.Name;\n        if (result.ContainsKey(typeName))\n            result[typeName]++;\n        else\n            result[typeName] = 1;\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533305"
+  },
+  {
+    "id": "rc06",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to place a family instance at a given XYZ point. Load the family from a .rfa file path if not already loaded, find the first available FamilySymbol, activate it, and place it on Level 1 inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "FamilySymbol",
+      "Activate",
+      "NewFamilyInstance",
+      "doc.LoadFamily",
+      "Transaction",
+      "Level",
+      "FilteredElementCollector",
+      "t.Start",
+      "t.Commit",
+      "StructuralType"
+    ],
+    "response": "```csharp\npublic void PlaceFamilyInstance(Document doc, string rfaPath, XYZ point)\n{\n    Family family = null;\n    FamilySymbol symbol = null;\n\n    // Check if already loaded\n    var families = new FilteredElementCollector(doc)\n        .OfClass(typeof(Family))\n        .Cast<Family>();\n\n    string familyName = Path.GetFileNameWithoutExtension(rfaPath);\n    family = families.FirstOrDefault(f => f.Name == familyName);\n\n    using (Transaction tx = new Transaction(doc, \"Place Family Instance\"))\n    {\n        tx.Start();\n\n        if (family == null)\n        {\n            if (!doc.LoadFamily(rfaPath, out family))\n                throw new Exception(\"Failed to load family.\");\n        }\n\n        ISet<ElementId> symbolIds = family.GetFamilySymbolIds();\n        if (symbolIds.Count == 0)\n            throw new Exception(\"No symbols found in family.\");\n\n        symbol = doc.GetElement(symbolIds.First()) as FamilySymbol;\n\n        if (!symbol.IsActive)\n            symbol.Activate();\n\n        Level level1 = new FilteredElementCollector(doc)\n            .OfClass(typeof(Level))\n            .Cast<Level>()\n            .FirstOrDefault(l => l.Name == \"Level 1\");\n\n        if (level1 == null)\n            throw new Exception(\"Level 1 not found.\");\n\n        doc.Create.NewFamilyInstance(point, symbol, level1, StructuralType.NonStructural);\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533307"
+  },
+  {
+    "id": "rc07",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to extract the solid geometry from a wall element using the GeometryElement API. Get the geometry with ComputeReferences, iterate through GeometryObject instances, handle GeometryInstance by getting instance geometry, and return the first Solid with non-zero volume. Write code only. No explanation.",
+    "expected_signals": [
+      "GeometryElement",
+      "Options",
+      "ComputeReferences",
+      "GetGeometryObjectFromReference",
+      "GeometryInstance",
+      "GetInstanceGeometry",
+      "Solid",
+      "Volume",
+      "OfType",
+      "DetailLevel"
+    ],
+    "response": "```csharp\npublic Solid GetWallSolid(Wall wall)\n{\n    Options options = new Options();\n    options.ComputeReferences = true;\n    options.DetailLevel = ViewDetailLevel.Fine;\n\n    GeometryElement geomElem = wall.get_Geometry(options);\n\n    foreach (GeometryObject geomObj in geomElem)\n    {\n        Solid solid = geomObj as Solid;\n        if (solid != null && solid.Volume > 0)\n            return solid;\n\n        GeometryInstance geomInst = geomObj as GeometryInstance;\n        if (geomInst != null)\n        {\n            GeometryElement instGeom = geomInst.GetInstanceGeometry();\n            foreach (GeometryObject instObj in instGeom)\n            {\n                solid = instObj as Solid;\n                if (solid != null && solid.Volume > 0)\n                    return solid;\n            }\n        }\n    }\n    return null;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533308"
+  },
+  {
+    "id": "rc08",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a new ViewPlan for Level 1 using a ViewFamilyType, then create a new ViewSheet with a titleblock, and place the view on the sheet using Viewport.Create. All inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "ViewPlan",
+      "ViewFamilyType",
+      "ViewSheet",
+      "Viewport",
+      "Create",
+      "Transaction",
+      "FilteredElementCollector",
+      "Level",
+      "TitleBlock",
+      "OfClass"
+    ],
+    "response": "```csharp\npublic void CreateViewAndSheet(Document doc)\n{\n    using (Transaction tx = new Transaction(doc, \"Create View and Sheet\"))\n    {\n        tx.Start();\n\n        // Find Level 1\n        Level level = new FilteredElementCollector(doc)\n            .OfClass(typeof(Level))\n            .Cast<Level>()\n            .FirstOrDefault(l => l.Name == \"Level 1\");\n\n        // Find ViewFamilyType for FloorPlan\n        ViewFamilyType vft = new FilteredElementCollector(doc)\n            .OfClass(typeof(ViewFamilyType))\n            .Cast<ViewFamilyType>()\n            .FirstOrDefault(v => v.ViewFamily == ViewFamily.FloorPlan);\n\n        ViewPlan viewPlan = ViewPlan.Create(doc, vft.Id, level.Id);\n        viewPlan.Name = \"New Floor Plan\";\n\n        // Find titleblock\n        FamilySymbol titleblock = new FilteredElementCollector(doc)\n            .OfClass(typeof(FamilySymbol))\n            .OfCategory(BuiltInCategory.OST_TitleBlocks)\n            .Cast<FamilySymbol>()\n            .FirstOrDefault();\n\n        if (!titleblock.IsActive)\n            titleblock.Activate();\n\n        ViewSheet sheet = ViewSheet.Create(doc, titleblock.Id);\n        sheet.Name = \"New Sheet\";\n        sheet.SheetNumber = \"A-101\";\n\n        XYZ center = new XYZ(1.5, 1.0, 0);\n        Viewport.Create(doc, sheet.Id, viewPlan.Id, center);\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533310"
+  },
+  {
+    "id": "rc09",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to get all doors in the model, then for each door read its width and height parameters using BuiltInParameter, and return a list of strings formatted as \"DoorMark: W x H mm\". Write code only. No explanation.",
+    "expected_signals": [
+      "FilteredElementCollector",
+      "BuiltInCategory.OST_Doors",
+      "WhereElementIsNotElementType",
+      "BuiltInParameter",
+      "DOOR_WIDTH",
+      "DOOR_HEIGHT",
+      "AsDouble",
+      "UnitUtils",
+      "List"
+    ],
+    "response": "```csharp\npublic List<string> GetDoorDimensions(Document doc)\n{\n    var result = new List<string>();\n\n    var doors = new FilteredElementCollector(doc)\n        .OfCategory(BuiltInCategory.OST_Doors)\n        .WhereElementIsNotElementType()\n        .ToElements();\n\n    foreach (var door in doors)\n    {\n        string mark = door.get_Parameter(BuiltInParameter.ALL_MODEL_MARK)?.AsString() ?? \"No Mark\";\n\n        double widthFt = door.get_Parameter(BuiltInParameter.DOOR_WIDTH)?.AsDouble() ?? 0;\n        double heightFt = door.get_Parameter(BuiltInParameter.DOOR_HEIGHT)?.AsDouble() ?? 0;\n\n        double widthMm = UnitUtils.ConvertFromInternalUnits(widthFt, UnitTypeId.Millimeters);\n        double heightMm = UnitUtils.ConvertFromInternalUnits(heightFt, UnitTypeId.Millimeters);\n\n        result.Add($\"{mark}: {widthMm:F0} x {heightMm:F0} mm\");\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533312"
+  },
+  {
+    "id": "rc10",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code implementing an IUpdater that monitors when any wall's Location property changes, and automatically logs the wall's ElementId and new location curve endpoints to a text file. Include the registration in IExternalApplication.OnStartup. Write code only. No explanation.",
+    "expected_signals": [
+      "IUpdater",
+      "GetUpdaterId",
+      "Execute",
+      "GetAddedElementIds",
+      "GetModifiedElementIds",
+      "UpdaterRegistry",
+      "RegisterUpdater",
+      "AddTrigger",
+      "ChangeType",
+      "LocationCurve",
+      "IExternalApplication"
+    ],
+    "response": "```csharp\npublic class WallLocationUpdater : IUpdater\n{\n    static AddInId _appId;\n    static UpdaterId _updaterId;\n\n    public WallLocationUpdater(AddInId id)\n    {\n        _appId = id;\n        _updaterId = new UpdaterId(_appId, new Guid(\"D4B3C5A1-2E6F-4A8B-9C0D-1E2F3A4B5C6D\"));\n    }\n\n    public void Execute(UpdaterData data)\n    {\n        Document doc = data.GetDocument();\n        string logPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), \"WallLocationLog.txt\");\n\n        foreach (ElementId id in data.GetModifiedElementIds())\n        {\n            Wall wall = doc.GetElement(id) as Wall;\n            if (wall == null) continue;\n\n            LocationCurve locCurve = wall.Location as LocationCurve;\n            if (locCurve == null) continue;\n\n            Curve curve = locCurve.Curve;\n            XYZ start = curve.GetEndPoint(0);\n            XYZ end = curve.GetEndPoint(1);\n\n            string entry = $\"{DateTime.Now}: Wall {id.IntegerValue} moved to ({start.X:F2},{start.Y:F2},{start.Z:F2}) - ({end.X:F2},{end.Y:F2},{end.Z:F2})\";\n            File.AppendAllText(logPath, entry + Environment.NewLine);\n        }\n    }\n\n    public string GetAdditionalInformation() => \"Monitors wall location changes\";\n    public ChangePriority GetChangePriority() => ChangePriority.FloorsRoofsStructuralWalls;\n    public UpdaterId GetUpdaterId() => _updaterId;\n    public string GetUpdaterName() => \"WallLocationUpdater\";\n}\n\npublic class WallLocationApp : IExternalApplication\n{\n    public Result OnStartup(UIControlledApplication application)\n    {\n        WallLocationUpdater updater = new WallLocationUpdater(application.ActiveAddInId);\n        UpdaterRegistry.RegisterUpdater(updater);\n\n        ElementClassFilter wallFilter = new ElementClassFilter(typeof(Wall));\n        UpdaterRegistry.AddTrigger(\n            updater.GetUpdaterId(),\n            wallFilter,\n            Element.GetChangeTypeGeometry());\n\n        return Result.Succeeded;\n    }\n\n    public Result OnShutdown(UIControlledApplication application)\n    {\n        WallLocationUpdater updater = new WallLocationUpdater(application.ActiveAddInId);\n        UpdaterRegistry.UnregisterUpdater(updater.GetUpdaterId());\n        return Result.Succeeded;\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533314"
+  },
+  {
+    "id": "rc11",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to collect all Revit links (RevitLinkInstance) in the current document, get each linked document, then count the total number of walls across all linked models. Return a Dictionary<string, int> mapping link name to wall count. Write code only. No explanation.",
+    "expected_signals": [
+      "RevitLinkInstance",
+      "FilteredElementCollector",
+      "GetLinkDocument",
+      "BuiltInCategory.OST_Walls",
+      "WhereElementIsNotElementType",
+      "Dictionary",
+      "Name",
+      "Count"
+    ],
+    "response": "```csharp\npublic Dictionary<string, int> GetLinkedWallCounts(Document doc)\n{\n    var result = new Dictionary<string, int>();\n\n    var links = new FilteredElementCollector(doc)\n        .OfClass(typeof(RevitLinkInstance))\n        .Cast<RevitLinkInstance>();\n\n    foreach (var link in links)\n    {\n        Document linkedDoc = link.GetLinkDocument();\n        if (linkedDoc == null) continue;\n\n        int wallCount = new FilteredElementCollector(linkedDoc)\n            .OfClass(typeof(Wall))\n            .WhereElementIsNotElementType()\n            .GetElementCount();\n\n        string linkName = link.Name;\n        result[linkName] = wallCount;\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533316"
+  },
+  {
+    "id": "rc12",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to move a selected element by a vector (10, 5, 0) feet using ElementTransformUtils.MoveElement. Get the currently selected element from UIDocument.Selection, validate it exists, and perform the move inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "ElementTransformUtils",
+      "MoveElement",
+      "Selection",
+      "GetElementIds",
+      "XYZ",
+      "Transaction",
+      "t.Start",
+      "t.Commit",
+      "UIDocument",
+      "ElementId"
+    ],
+    "response": "```csharp\n[Transaction(TransactionMode.Manual)]\npublic class MoveElementCommand : IExternalCommand\n{\n    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)\n    {\n        UIDocument uidoc = commandData.Application.ActiveUIDocument;\n        Document doc = uidoc.Document;\n\n        ICollection<ElementId> selectedIds = uidoc.Selection.GetElementIds();\n        if (selectedIds.Count == 0)\n        {\n            TaskDialog.Show(\"Error\", \"No element selected.\");\n            return Result.Failed;\n        }\n\n        ElementId elemId = selectedIds.First();\n        XYZ translation = new XYZ(10, 5, 0);\n\n        using (Transaction tx = new Transaction(doc, \"Move Element\"))\n        {\n            tx.Start();\n            ElementTransformUtils.MoveElement(doc, elemId, translation);\n            tx.Commit();\n        }\n\n        return Result.Succeeded;\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533317"
+  },
+  {
+    "id": "rc13",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to create a shared parameter from an external definition file, add it to the Walls category as an instance parameter under the Data group, and bind it to the project using BindingMap. Include creating the DefinitionFile and DefinitionGroup. Write code only. No explanation.",
+    "expected_signals": [
+      "DefinitionFile",
+      "ExternalDefinitionCreationOptions",
+      "DefinitionGroup",
+      "ExternalDefinition",
+      "CategorySet",
+      "InstanceBinding",
+      "BindingMap",
+      "Transaction",
+      "ParameterBindings",
+      "OpenSharedParameterFile"
+    ],
+    "response": "```csharp\npublic void CreateSharedParameter(Document doc, UIApplication uiApp)\n{\n    string sharedParamFile = Path.Combine(\n        Environment.GetFolderPath(Environment.SpecialFolder.Desktop),\n        \"SharedParams.txt\");\n\n    if (!File.Exists(sharedParamFile))\n        File.Create(sharedParamFile).Close();\n\n    uiApp.Application.SharedParametersFilename = sharedParamFile;\n    DefinitionFile defFile = uiApp.Application.OpenSharedParameterFile();\n\n    DefinitionGroup group = defFile.Groups.get_Item(\"Custom Parameters\")\n        ?? defFile.Groups.Create(\"Custom Parameters\");\n\n    ExternalDefinitionCreationOptions options =\n        new ExternalDefinitionCreationOptions(\"WallData\", SpecTypeId.String.Text);\n    options.Visible = true;\n\n    Definition definition = group.Definitions.get_Item(\"WallData\")\n        ?? group.Definitions.Create(options);\n\n    CategorySet catSet = uiApp.Application.Create.NewCategorySet();\n    catSet.Insert(doc.Settings.Categories.get_Item(BuiltInCategory.OST_Walls));\n\n    InstanceBinding binding = uiApp.Application.Create.NewInstanceBinding(catSet);\n\n    using (Transaction tx = new Transaction(doc, \"Add Shared Parameter\"))\n    {\n        tx.Start();\n        BindingMap bindingMap = doc.ParameterBindings;\n        bindingMap.Insert(definition, binding, BuiltInParameterGroup.PG_DATA);\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533319"
+  },
+  {
+    "id": "rc14",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to get all rooms in the model, extract each room's boundary segments using GetBoundarySegments with SpatialElementBoundaryOptions, and return a Dictionary<string, List<Curve>> mapping room name to its boundary curves. Write code only. No explanation.",
+    "expected_signals": [
+      "Room",
+      "GetBoundarySegments",
+      "SpatialElementBoundaryOptions",
+      "BoundarySegment",
+      "GetCurve",
+      "Curve",
+      "Dictionary",
+      "FilteredElementCollector",
+      "BuiltInCategory.OST_Rooms"
+    ],
+    "response": "```csharp\npublic Dictionary<string, List<Curve>> GetRoomBoundaries(Document doc)\n{\n    var result = new Dictionary<string, List<Curve>>();\n\n    var rooms = new FilteredElementCollector(doc)\n        .OfCategory(BuiltInCategory.OST_Rooms)\n        .WhereElementIsNotElementType()\n        .Cast<Room>();\n\n    SpatialElementBoundaryOptions options = new SpatialElementBoundaryOptions();\n    options.SpatialElementBoundaryLocation = SpatialElementBoundaryLocation.Finish;\n\n    foreach (Room room in rooms)\n    {\n        if (room.Area <= 0) continue;\n\n        string name = room.get_Parameter(BuiltInParameter.ROOM_NAME).AsString() ?? \"Unnamed\";\n        var curves = new List<Curve>();\n\n        IList<IList<BoundarySegment>> boundaries = room.GetBoundarySegments(options);\n        if (boundaries == null) continue;\n\n        foreach (IList<BoundarySegment> loop in boundaries)\n        {\n            foreach (BoundarySegment seg in loop)\n            {\n                curves.Add(seg.GetCurve());\n            }\n        }\n\n        if (result.ContainsKey(name))\n            name = name + \" (\" + room.Id.IntegerValue + \")\";\n        result[name] = curves;\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533321"
+  },
+  {
+    "id": "rc15",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to find all curtain walls in the model, access their CurtainGrid, iterate through panel and mullion ElementIds, and return a summary of panel count and mullion count per curtain wall. Write code only. No explanation.",
+    "expected_signals": [
+      "CurtainGrid",
+      "GetPanelIds",
+      "GetMullionIds",
+      "Wall",
+      "FilteredElementCollector",
+      "BuiltInCategory.OST_Walls",
+      "WallType",
+      "CurtainWallType",
+      "Dictionary"
+    ],
+    "response": "```csharp\npublic Dictionary<string, (int panelCount, int mullionCount)> GetCurtainWallSummary(Document doc)\n{\n    var result = new Dictionary<string, (int, int)>();\n\n    var curtainWalls = new FilteredElementCollector(doc)\n        .OfClass(typeof(Wall))\n        .WhereElementIsNotElementType()\n        .Cast<Wall>()\n        .Where(w => w.WallType.Kind == WallKind.Curtain);\n\n    foreach (Wall cw in curtainWalls)\n    {\n        CurtainGrid grid = cw.CurtainGrid;\n        if (grid == null) continue;\n\n        int panelCount = grid.GetPanelIds().Count;\n        int mullionCount = grid.GetMullionIds().Count;\n\n        string name = cw.Name + \" (\" + cw.Id.IntegerValue + \")\";\n        result[name] = (panelCount, mullionCount);\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533322"
+  },
+  {
+    "id": "rc16",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to find all duct instances in the model, get each duct's ConnectorManager, iterate through its Connectors, find connected elements via AllRefs, and build an adjacency list of connected duct ElementIds. Write code only. No explanation.",
+    "expected_signals": [
+      "ConnectorManager",
+      "Connector",
+      "ConnectorSet",
+      "AllRefs",
+      "Duct",
+      "FilteredElementCollector",
+      "BuiltInCategory.OST_DuctCurves",
+      "ElementId",
+      "Domain",
+      "MEPCurve"
+    ],
+    "response": "```csharp\npublic Dictionary<ElementId, List<ElementId>> BuildDuctAdjacencyList(Document doc)\n{\n    var adjacency = new Dictionary<ElementId, List<ElementId>>();\n\n    var ducts = new FilteredElementCollector(doc)\n        .OfClass(typeof(Autodesk.Revit.DB.Mechanical.Duct))\n        .WhereElementIsNotElementType()\n        .ToElements();\n\n    foreach (var elem in ducts)\n    {\n        MEPCurve duct = elem as MEPCurve;\n        if (duct == null) continue;\n\n        if (!adjacency.ContainsKey(duct.Id))\n            adjacency[duct.Id] = new List<ElementId>();\n\n        ConnectorSet connectors = duct.ConnectorManager.Connectors;\n        foreach (Connector conn in connectors)\n        {\n            ConnectorSet allRefs = conn.AllRefs;\n            if (allRefs == null) continue;\n\n            foreach (Connector refConn in allRefs)\n            {\n                ElementId connectedId = refConn.Owner.Id;\n                if (connectedId == duct.Id) continue;\n\n                if (!adjacency[duct.Id].Contains(connectedId))\n                    adjacency[duct.Id].Add(connectedId);\n            }\n        }\n    }\n    return adjacency;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533324"
+  },
+  {
+    "id": "rc17",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to find a ViewSchedule by name, read its TableData including header and body sections, and return a List<Dictionary<string, string>> where each dictionary maps column header to cell value for that row. Write code only. No explanation.",
+    "expected_signals": [
+      "ViewSchedule",
+      "TableData",
+      "GetTableData",
+      "SectionData",
+      "GetSectionData",
+      "SectionType",
+      "GetCellText",
+      "NumberOfRows",
+      "NumberOfColumns",
+      "FilteredElementCollector"
+    ],
+    "response": "```csharp\npublic List<Dictionary<string, string>> ReadScheduleData(Document doc, string scheduleName)\n{\n    var result = new List<Dictionary<string, string>>();\n\n    ViewSchedule schedule = new FilteredElementCollector(doc)\n        .OfClass(typeof(ViewSchedule))\n        .Cast<ViewSchedule>()\n        .FirstOrDefault(vs => vs.Name == scheduleName);\n\n    if (schedule == null) return result;\n\n    TableData tableData = schedule.GetTableData();\n    TableSectionData headerSection = tableData.GetSectionData(SectionType.Header);\n    TableSectionData bodySection = tableData.GetSectionData(SectionType.Body);\n\n    // Get column headers from the first row of the body (or header section)\n    int colCount = bodySection.NumberOfColumns;\n    int rowCount = bodySection.NumberOfRows;\n\n    // First row is typically the header in the body section\n    var headers = new List<string>();\n    for (int c = 0; c < colCount; c++)\n    {\n        headers.Add(bodySection.GetCellText(0, c));\n    }\n\n    // Data rows start at index 1\n    for (int r = 1; r < rowCount; r++)\n    {\n        var row = new Dictionary<string, string>();\n        for (int c = 0; c < colCount; c++)\n        {\n            row[headers[c]] = bodySection.GetCellText(r, c);\n        }\n        result.Add(row);\n    }\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533326"
+  },
+  {
+    "id": "rc18",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to collect all wall instances that were created in a specific phase by filtering on the PHASE_CREATED built-in parameter. Get the phase from the active view. Write code only. No explanation.",
+    "expected_signals": [
+      "FilteredElementCollector",
+      "Phase",
+      "BuiltInParameter",
+      "PHASE_CREATED",
+      "View",
+      "WhereElementIsNotElementType",
+      "BuiltInCategory.OST_Walls",
+      "AsElementId"
+    ],
+    "response": "```csharp\npublic List<Wall> GetWallsByPhase(Document doc, View activeView)\n{\n    Phase phase = doc.GetElement(activeView.get_Parameter(BuiltInParameter.VIEW_PHASE).AsElementId()) as Phase;\n    if (phase == null) return new List<Wall>();\n\n    var walls = new FilteredElementCollector(doc, activeView.Id)\n        .OfClass(typeof(Wall))\n        .WhereElementIsNotElementType()\n        .Cast<Wall>()\n        .Where(w =>\n        {\n            Parameter phaseParam = w.get_Parameter(BuiltInParameter.PHASE_CREATED);\n            return phaseParam != null && phaseParam.AsElementId() == phase.Id;\n        })\n        .ToList();\n\n    return walls;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533327"
+  },
+  {
+    "id": "rc19",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to check if the document is workshared, get all worksets using FilteredWorksetCollector, and assign all walls to a workset named 'Structural' by setting the ELEM_PARTITION_PARAM inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "FilteredWorksetCollector",
+      "WorksetKind",
+      "Workset",
+      "IsWorkshared",
+      "ELEM_PARTITION_PARAM",
+      "WorksetId",
+      "FilteredElementCollector",
+      "Transaction",
+      "BuiltInCategory.OST_Walls"
+    ],
+    "response": "```csharp\npublic void AssignWallsToWorkset(Document doc)\n{\n    if (!doc.IsWorkshared)\n        throw new InvalidOperationException(\"Document is not workshared.\");\n\n    FilteredWorksetCollector worksetCollector = new FilteredWorksetCollector(doc)\n        .OfKind(WorksetKind.UserWorkset);\n\n    Workset structuralWorkset = worksetCollector\n        .FirstOrDefault(ws => ws.Name == \"Structural\");\n\n    if (structuralWorkset == null)\n        throw new Exception(\"Workset 'Structural' not found.\");\n\n    var walls = new FilteredElementCollector(doc)\n        .OfClass(typeof(Wall))\n        .WhereElementIsNotElementType()\n        .ToElements();\n\n    using (Transaction tx = new Transaction(doc, \"Assign Walls to Workset\"))\n    {\n        tx.Start();\n        foreach (var wall in walls)\n        {\n            Parameter worksetParam = wall.get_Parameter(BuiltInParameter.ELEM_PARTITION_PARAM);\n            if (worksetParam != null && !worksetParam.IsReadOnly)\n            {\n                worksetParam.Set(structuralWorkset.Id.IntegerValue);\n            }\n        }\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533329"
+  },
+  {
+    "id": "rc20",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a linear dimension along a wall in the active view. Get the wall's LocationCurve, create a ReferenceArray from the wall's end references, and use doc.Create.NewDimension to place the dimension. Write code only. No explanation.",
+    "expected_signals": [
+      "Dimension",
+      "NewDimension",
+      "ReferenceArray",
+      "LocationCurve",
+      "Line",
+      "Reference",
+      "View",
+      "Transaction",
+      "Curve"
+    ],
+    "response": "```csharp\npublic void CreateWallDimension(Document doc, Wall wall, View view)\n{\n    LocationCurve locCurve = wall.Location as LocationCurve;\n    if (locCurve == null) return;\n\n    Curve curve = locCurve.Curve;\n\n    Options geomOptions = new Options();\n    geomOptions.ComputeReferences = true;\n    geomOptions.View = view;\n\n    GeometryElement geomElem = wall.get_Geometry(geomOptions);\n    ReferenceArray refArray = new ReferenceArray();\n\n    // Get references from the wall's end faces\n    foreach (GeometryObject geomObj in geomElem)\n    {\n        Solid solid = geomObj as Solid;\n        if (solid == null || solid.Volume <= 0) continue;\n\n        foreach (Face face in solid.Faces)\n        {\n            PlanarFace pf = face as PlanarFace;\n            if (pf != null)\n            {\n                XYZ normal = pf.FaceNormal;\n                XYZ wallDir = (curve.GetEndPoint(1) - curve.GetEndPoint(0)).Normalize();\n                if (Math.Abs(normal.DotProduct(wallDir)) > 0.9)\n                {\n                    refArray.Append(face.Reference);\n                }\n            }\n            if (refArray.Size >= 2) break;\n        }\n        if (refArray.Size >= 2) break;\n    }\n\n    if (refArray.Size < 2) return;\n\n    using (Transaction tx = new Transaction(doc, \"Create Dimension\"))\n    {\n        tx.Start();\n        XYZ offset = curve.GetEndPoint(0) + new XYZ(0, 3, 0);\n        Line dimLine = Line.CreateBound(offset, offset + (curve.GetEndPoint(1) - curve.GetEndPoint(0)));\n        doc.Create.NewDimension(view, dimLine, refArray);\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533331"
+  },
+  {
+    "id": "rc21",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a new Material in the document, set its color to red (255,0,0), assign a solid fill pattern to its surface foreground, and apply it as the structural material of an existing wall via parameter. Write code only. No explanation.",
+    "expected_signals": [
+      "Material",
+      "Create",
+      "Color",
+      "FillPatternElement",
+      "GetSolidFillPatternId",
+      "SurfaceForegroundPatternId",
+      "SurfaceForegroundPatternColor",
+      "Transaction",
+      "FilteredElementCollector"
+    ],
+    "response": "```csharp\npublic void CreateAndApplyRedMaterial(Document doc, Wall wall)\n{\n    using (Transaction tx = new Transaction(doc, \"Create Material\"))\n    {\n        tx.Start();\n\n        ElementId materialId = Material.Create(doc, \"Red Material\");\n        Material mat = doc.GetElement(materialId) as Material;\n        mat.Color = new Color(255, 0, 0);\n\n        // Find solid fill pattern\n        FillPatternElement solidFill = new FilteredElementCollector(doc)\n            .OfClass(typeof(FillPatternElement))\n            .Cast<FillPatternElement>()\n            .FirstOrDefault(fp => fp.GetFillPattern().IsSolidFill);\n\n        if (solidFill != null)\n        {\n            mat.SurfaceForegroundPatternId = solidFill.Id;\n            mat.SurfaceForegroundPatternColor = new Color(255, 0, 0);\n        }\n\n        // Apply as structural material\n        Parameter structMatParam = wall.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM);\n        if (structMatParam != null && !structMatParam.IsReadOnly)\n        {\n            structMatParam.Set(materialId);\n        }\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533332"
+  },
+  {
+    "id": "rc22",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to copy a set of elements from their current position to a new location offset by (10, 0, 0) using ElementTransformUtils.CopyElements with a translation transform inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "ElementTransformUtils",
+      "CopyElements",
+      "Transform",
+      "Translation",
+      "XYZ",
+      "Transaction",
+      "ElementId",
+      "ICollection"
+    ],
+    "response": "```csharp\npublic void CopyElementsWithOffset(Document doc, ICollection<ElementId> elementIds)\n{\n    using (Transaction tx = new Transaction(doc, \"Copy Elements\"))\n    {\n        tx.Start();\n\n        XYZ translation = new XYZ(10, 0, 0);\n        ElementTransformUtils.CopyElements(doc, elementIds, translation);\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533334"
+  },
+  {
+    "id": "rc23",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to create rebar in a concrete beam element using Rebar.CreateFromCurves. Define a rectangular stirrup shape with four line segments, specify the RebarBarType and RebarHookType, set RebarStyle to Stirrup, and place it inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "Rebar",
+      "CreateFromCurves",
+      "RebarBarType",
+      "RebarHookType",
+      "RebarHookOrientation",
+      "RebarStyle",
+      "FilteredElementCollector",
+      "Line",
+      "Transaction",
+      "XYZ"
+    ],
+    "response": "```csharp\npublic void CreateStirrup(Document doc, Element beam)\n{\n    using (Transaction tx = new Transaction(doc, \"Create Rebar\"))\n    {\n        tx.Start();\n\n        RebarBarType barType = new FilteredElementCollector(doc)\n            .OfClass(typeof(RebarBarType))\n            .Cast<RebarBarType>()\n            .FirstOrDefault();\n\n        RebarHookType hookType = new FilteredElementCollector(doc)\n            .OfClass(typeof(RebarHookType))\n            .Cast<RebarHookType>()\n            .FirstOrDefault();\n\n        // Define stirrup corners (assuming beam cross-section)\n        double width = 0.3; // ~300mm\n        double height = 0.5; // ~500mm\n        double cover = 0.025; // 25mm cover\n\n        double w = width / 2 - cover;\n        double h = height / 2 - cover;\n\n        XYZ p0 = new XYZ(-w, 0, -h);\n        XYZ p1 = new XYZ(w, 0, -h);\n        XYZ p2 = new XYZ(w, 0, h);\n        XYZ p3 = new XYZ(-w, 0, h);\n\n        List<Curve> curves = new List<Curve>\n        {\n            Line.CreateBound(p0, p1),\n            Line.CreateBound(p1, p2),\n            Line.CreateBound(p2, p3),\n            Line.CreateBound(p3, p0)\n        };\n\n        XYZ normal = XYZ.BasisY;\n\n        Rebar rebar = Rebar.CreateFromCurves(\n            doc,\n            RebarStyle.StirrupTie,\n            barType,\n            hookType,\n            hookType,\n            beam,\n            normal,\n            curves,\n            RebarHookOrientation.Left,\n            RebarHookOrientation.Left,\n            true,\n            true);\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533336"
+  },
+  {
+    "id": "rc24",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to place room tags on all untagged rooms in the active view using IndependentTag.Create. Get each room's location point, use TagMode.TM_ADDBY_CATEGORY, and set horizontal orientation. Write code only. No explanation.",
+    "expected_signals": [
+      "IndependentTag",
+      "Create",
+      "TagMode",
+      "TagOrientation",
+      "Reference",
+      "LocationPoint",
+      "Point",
+      "FilteredElementCollector",
+      "Transaction",
+      "View"
+    ],
+    "response": "```csharp\npublic void TagUntaggedRooms(Document doc, View activeView)\n{\n    var rooms = new FilteredElementCollector(doc, activeView.Id)\n        .OfCategory(BuiltInCategory.OST_Rooms)\n        .WhereElementIsNotElementType()\n        .Cast<Room>()\n        .Where(r => r.Area > 0);\n\n    // Get already tagged room ids\n    var existingTags = new FilteredElementCollector(doc, activeView.Id)\n        .OfCategory(BuiltInCategory.OST_RoomTags)\n        .WhereElementIsNotElementType()\n        .Cast<RoomTag>()\n        .Select(t => t.Room?.Id)\n        .Where(id => id != null)\n        .ToHashSet();\n\n    using (Transaction tx = new Transaction(doc, \"Tag Rooms\"))\n    {\n        tx.Start();\n\n        foreach (Room room in rooms)\n        {\n            if (existingTags.Contains(room.Id)) continue;\n\n            LocationPoint locPt = room.Location as LocationPoint;\n            if (locPt == null) continue;\n\n            UV uv = new UV(locPt.Point.X, locPt.Point.Y);\n            Reference roomRef = new Reference(room);\n\n            IndependentTag.Create(\n                doc,\n                activeView.Id,\n                roomRef,\n                false,\n                TagMode.TM_ADDBY_CATEGORY,\n                TagOrientation.Horizontal,\n                locPt.Point);\n        }\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533337"
+  },
+  {
+    "id": "rc25",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to get the user's current selection from UIDocument, create a Group from the selected elements using doc.Create.NewGroup, and show the group name in a TaskDialog. Include a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "Group",
+      "NewGroup",
+      "Selection",
+      "GetElementIds",
+      "ICollection",
+      "ElementId",
+      "Transaction",
+      "TaskDialog",
+      "UIDocument"
+    ],
+    "response": "```csharp\n[Transaction(TransactionMode.Manual)]\npublic class GroupSelectedCommand : IExternalCommand\n{\n    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)\n    {\n        UIDocument uidoc = commandData.Application.ActiveUIDocument;\n        Document doc = uidoc.Document;\n\n        ICollection<ElementId> selectedIds = uidoc.Selection.GetElementIds();\n        if (selectedIds.Count == 0)\n        {\n            TaskDialog.Show(\"Error\", \"No elements selected.\");\n            return Result.Failed;\n        }\n\n        using (Transaction tx = new Transaction(doc, \"Create Group\"))\n        {\n            tx.Start();\n            Group group = doc.Create.NewGroup(selectedIds);\n            tx.Commit();\n\n            TaskDialog.Show(\"Group Created\", \"Group name: \" + group.GroupType.Name);\n        }\n\n        return Result.Succeeded;\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T19:31:02.533339"
+  },
+  {
+    "id": "rc26",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to access the ProjectInfo object from the document and read the BuildingName, Address, and Number properties. Display them in a TaskDialog. Write code only. No explanation.",
+    "expected_signals": [
+      "ProjectInfo",
+      "doc.ProjectInformation",
+      "BuildingName",
+      "Address",
+      "Number",
+      "TaskDialog"
+    ],
+    "response": "```csharp\n[Transaction(TransactionMode.Manual)]\npublic class ProjectInfoCommand : IExternalCommand\n{\n    public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)\n    {\n        Document doc = commandData.Application.ActiveUIDocument.Document;\n\n        ProjectInfo info = doc.ProjectInformation;\n\n        string buildingName = info.BuildingName ?? \"N/A\";\n        string address = info.Address ?? \"N/A\";\n        string number = info.Number ?? \"N/A\";\n\n        TaskDialog.Show(\"Project Info\",\n            $\"Building Name: {buildingName}\\n\" +\n            $\"Address: {address}\\n\" +\n            $\"Number: {number}\");\n\n        return Result.Succeeded;\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791409"
+  },
+  {
+    "id": "rc27",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to create a ModelLine in the active document. Create a SketchPlane from a Plane at the origin, then use doc.Create.NewModelCurve to draw a line from (0,0,0) to (10,0,0). Include a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "SketchPlane",
+      "Plane",
+      "NewModelCurve",
+      "Line.CreateBound",
+      "XYZ",
+      "Transaction",
+      "doc.Create",
+      "ModelCurve"
+    ],
+    "response": "```csharp\npublic void CreateModelLine(Document doc)\n{\n    using (Transaction tx = new Transaction(doc, \"Create Model Line\"))\n    {\n        tx.Start();\n\n        XYZ origin = XYZ.Zero;\n        XYZ normal = XYZ.BasisZ;\n        Plane plane = Plane.CreateByNormalAndOrigin(normal, origin);\n        SketchPlane sketchPlane = SketchPlane.Create(doc, plane);\n\n        XYZ start = new XYZ(0, 0, 0);\n        XYZ end = new XYZ(10, 0, 0);\n        Line line = Line.CreateBound(start, end);\n\n        doc.Create.NewModelCurve(line, sketchPlane);\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791422"
+  },
+  {
+    "id": "rc28",
+    "domain": "revit_csharp",
+    "difficulty": "easy",
+    "question": "Write C# code to duplicate an existing ViewPlan using View.Duplicate with ViewDuplicateOption.Duplicate, then rename the duplicated view by setting its ViewName property. Include a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "Duplicate",
+      "ViewDuplicateOption",
+      "ViewPlan",
+      "ViewName",
+      "Transaction",
+      "FilteredElementCollector",
+      "ElementId",
+      "doc.GetElement"
+    ],
+    "response": "```csharp\npublic void DuplicateView(Document doc)\n{\n    ViewPlan viewPlan = new FilteredElementCollector(doc)\n        .OfClass(typeof(ViewPlan))\n        .Cast<ViewPlan>()\n        .FirstOrDefault(v => !v.IsTemplate && v.CanViewBeDuplicated(ViewDuplicateOption.Duplicate));\n\n    if (viewPlan == null) return;\n\n    using (Transaction tx = new Transaction(doc, \"Duplicate View\"))\n    {\n        tx.Start();\n\n        ElementId newViewId = viewPlan.Duplicate(ViewDuplicateOption.Duplicate);\n        View newView = doc.GetElement(newViewId) as View;\n        newView.Name = viewPlan.Name + \" - Copy\";\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791425"
+  },
+  {
+    "id": "rc29",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code implementing an IExternalEventHandler for executing Revit API calls from a modeless dialog. Show the handler class with Execute method, ExternalEvent.Create registration, and how to call Raise() from a button click. Include a Transaction inside the handler. Write code only. No explanation.",
+    "expected_signals": [
+      "IExternalEventHandler",
+      "Execute",
+      "ExternalEvent",
+      "Create",
+      "Raise",
+      "UIApplication",
+      "Transaction",
+      "GetName",
+      "modeless"
+    ],
+    "response": "```csharp\npublic class MyEventHandler : IExternalEventHandler\n{\n    private Action<UIApplication> _action;\n\n    public void SetAction(Action<UIApplication> action)\n    {\n        _action = action;\n    }\n\n    public void Execute(UIApplication app)\n    {\n        if (_action == null) return;\n\n        Document doc = app.ActiveUIDocument.Document;\n        using (Transaction tx = new Transaction(doc, \"External Event Action\"))\n        {\n            tx.Start();\n            _action.Invoke(app);\n            tx.Commit();\n        }\n    }\n\n    public string GetName() => \"MyEventHandler\";\n}\n\n// Registration and usage in a modeless WPF dialog\npublic partial class MyModelessDialog : Window\n{\n    private static MyEventHandler _handler;\n    private static ExternalEvent _externalEvent;\n\n    public MyModelessDialog()\n    {\n        InitializeComponent();\n        _handler = new MyEventHandler();\n        _externalEvent = ExternalEvent.Create(_handler);\n    }\n\n    private void Button_Click(object sender, RoutedEventArgs e)\n    {\n        _handler.SetAction((uiApp) =>\n        {\n            Document doc = uiApp.ActiveUIDocument.Document;\n            // Perform Revit API calls here\n            TaskDialog.Show(\"Info\", \"Executed from modeless dialog.\");\n        });\n        _externalEvent.Raise();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791427"
+  },
+  {
+    "id": "rc30",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code using ParameterFilterRuleFactory to create a FilterRule that finds walls where the Mark parameter equals a specific string value. Use it with a ParameterValueProvider and ElementParameterFilter in a FilteredElementCollector. Write code only. No explanation.",
+    "expected_signals": [
+      "ParameterFilterRuleFactory",
+      "FilterRule",
+      "ParameterValueProvider",
+      "ElementParameterFilter",
+      "FilteredElementCollector",
+      "BuiltInParameter",
+      "ALL_MODEL_MARK",
+      "BuiltInCategory.OST_Walls"
+    ],
+    "response": "```csharp\npublic List<Wall> GetWallsByMark(Document doc, string markValue)\n{\n    ElementId markParamId = new ElementId(BuiltInParameter.ALL_MODEL_MARK);\n\n    FilterRule rule = ParameterFilterRuleFactory.CreateEqualsRule(\n        markParamId, markValue, false);\n\n    ElementParameterFilter paramFilter = new ElementParameterFilter(rule);\n\n    List<Wall> walls = new FilteredElementCollector(doc)\n        .OfClass(typeof(Wall))\n        .WhereElementIsNotElementType()\n        .WherePasses(paramFilter)\n        .Cast<Wall>()\n        .ToList();\n\n    return walls;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791428"
+  },
+  {
+    "id": "rc31",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to set a section box on a 3D view. Create a BoundingBoxXYZ with specific Min and Max points, find a View3D in the document, enable and assign the section box using View3D.SetSectionBox inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "View3D",
+      "BoundingBoxXYZ",
+      "SetSectionBox",
+      "IsSectionBoxActive",
+      "Min",
+      "Max",
+      "XYZ",
+      "Transaction",
+      "FilteredElementCollector"
+    ],
+    "response": "```csharp\npublic void SetSectionBox(Document doc)\n{\n    View3D view3d = new FilteredElementCollector(doc)\n        .OfClass(typeof(View3D))\n        .Cast<View3D>()\n        .FirstOrDefault(v => !v.IsTemplate);\n\n    if (view3d == null) return;\n\n    BoundingBoxXYZ bbox = new BoundingBoxXYZ();\n    bbox.Min = new XYZ(-50, -50, -10);\n    bbox.Max = new XYZ(50, 50, 30);\n\n    using (Transaction tx = new Transaction(doc, \"Set Section Box\"))\n    {\n        tx.Start();\n        view3d.IsSectionBoxActive = true;\n        view3d.SetSectionBox(bbox);\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791430"
+  },
+  {
+    "id": "rc32",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a new Level at a specified elevation using Level.Create, then create multiple Grid lines along the X axis using Grid.Create with Line geometry. Both operations inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "Level.Create",
+      "Grid.Create",
+      "Line.CreateBound",
+      "XYZ",
+      "Transaction",
+      "Elevation",
+      "FilteredElementCollector"
+    ],
+    "response": "```csharp\npublic void CreateLevelAndGrids(Document doc)\n{\n    using (Transaction tx = new Transaction(doc, \"Create Level and Grids\"))\n    {\n        tx.Start();\n\n        // Create a new level at 15 feet elevation\n        Level newLevel = Level.Create(doc, 15.0);\n        newLevel.Name = \"Level 4\";\n\n        // Create grid lines along X axis\n        double gridLength = 100.0;\n        for (int i = 0; i < 5; i++)\n        {\n            double offset = i * 20.0;\n            XYZ start = new XYZ(offset, -gridLength / 2, 0);\n            XYZ end = new XYZ(offset, gridLength / 2, 0);\n            Line line = Line.CreateBound(start, end);\n            Grid grid = Grid.Create(doc, line);\n            grid.Name = ((char)('A' + i)).ToString();\n        }\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791431"
+  },
+  {
+    "id": "rc33",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code using Extensible Storage to create a Schema with SchemaBuilder, add a string field and a double field, then store data on a wall element using Entity and retrieve it back. Include GUID, schema name, and a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "SchemaBuilder",
+      "Schema",
+      "Entity",
+      "FieldBuilder",
+      "SetEntity",
+      "GetEntity",
+      "Guid",
+      "Transaction",
+      "Element",
+      "Get",
+      "Set"
+    ],
+    "response": "```csharp\npublic class ExtensibleStorageExample\n{\n    private static readonly Guid SchemaGuid = new Guid(\"A1B2C3D4-E5F6-7890-ABCD-EF1234567890\");\n\n    public void StoreData(Document doc, Wall wall)\n    {\n        SchemaBuilder builder = new SchemaBuilder(SchemaGuid);\n        builder.SetSchemaName(\"CustomData\");\n        builder.SetReadAccessLevel(AccessLevel.Public);\n        builder.SetWriteAccessLevel(AccessLevel.Public);\n\n        builder.AddSimpleField(\"Description\", typeof(string));\n        builder.AddSimpleField(\"Length\", typeof(double));\n\n        Schema schema = builder.Finish();\n\n        using (Transaction tx = new Transaction(doc, \"Store Data\"))\n        {\n            tx.Start();\n\n            Entity entity = new Entity(schema);\n            entity.Set<string>(\"Description\", \"Exterior Wall\");\n            entity.Set<double>(\"Length\", 25.5);\n\n            wall.SetEntity(entity);\n\n            tx.Commit();\n        }\n    }\n\n    public (string description, double length) RetrieveData(Wall wall)\n    {\n        Schema schema = Schema.Lookup(SchemaGuid);\n        if (schema == null) return (null, 0);\n\n        Entity entity = wall.GetEntity(schema);\n        if (!entity.IsValid()) return (null, 0);\n\n        string description = entity.Get<string>(\"Description\");\n        double length = entity.Get<double>(\"Length\");\n\n        return (description, length);\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791433"
+  },
+  {
+    "id": "rc34",
+    "domain": "revit_csharp",
+    "difficulty": "medium",
+    "question": "Write C# code to create a ParameterFilterElement with filter rules, apply it to the active view using View.AddFilter, and set color overrides for matching elements using OverrideGraphicSettings with SetProjectionLineColor. Include a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "ParameterFilterElement",
+      "FilterRule",
+      "ParameterFilterRuleFactory",
+      "OverrideGraphicSettings",
+      "SetProjectionLineColor",
+      "Color",
+      "AddFilter",
+      "SetFilterOverrides",
+      "View",
+      "Transaction"
+    ],
+    "response": "```csharp\npublic void CreateAndApplyViewFilter(Document doc)\n{\n    View activeView = doc.ActiveView;\n\n    using (Transaction tx = new Transaction(doc, \"Create View Filter\"))\n    {\n        tx.Start();\n\n        IList<ElementId> categories = new List<ElementId>\n        {\n            new ElementId(BuiltInCategory.OST_Walls)\n        };\n\n        ElementId commentsId = new ElementId(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);\n        FilterRule rule = ParameterFilterRuleFactory.CreateContainsRule(\n            commentsId, \"Temporary\", false);\n\n        ElementParameterFilter elemFilter = new ElementParameterFilter(rule);\n\n        ParameterFilterElement filterElem = ParameterFilterElement.Create(\n            doc, \"Temporary Walls Filter\", categories, elemFilter);\n\n        activeView.AddFilter(filterElem.Id);\n        activeView.SetFilterVisibility(filterElem.Id, true);\n\n        OverrideGraphicSettings ogs = new OverrideGraphicSettings();\n        ogs.SetProjectionLineColor(new Color(255, 0, 0));\n        activeView.SetFilterOverrides(filterElem.Id, ogs);\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791434"
+  },
+  {
+    "id": "rc35",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code using ElementIntersectsElementFilter to find all elements that physically intersect a selected element. Get the selected element's solid geometry, create the intersection filter, and return a list of intersecting ElementIds with their category names. Write code only. No explanation.",
+    "expected_signals": [
+      "ElementIntersectsElementFilter",
+      "FilteredElementCollector",
+      "Solid",
+      "GeometryElement",
+      "Options",
+      "ExclusionFilter",
+      "ElementId",
+      "Category",
+      "Name"
+    ],
+    "response": "```csharp\npublic List<(ElementId Id, string CategoryName)> FindIntersectingElements(Document doc, Element selectedElement)\n{\n    var result = new List<(ElementId, string)>();\n\n    ElementIntersectsElementFilter intersectFilter =\n        new ElementIntersectsElementFilter(selectedElement);\n\n    var intersecting = new FilteredElementCollector(doc)\n        .WherePasses(intersectFilter)\n        .ToElements();\n\n    foreach (var elem in intersecting)\n    {\n        if (elem.Id == selectedElement.Id) continue;\n\n        string catName = elem.Category?.Name ?? \"No Category\";\n        result.Add((elem.Id, catName));\n    }\n\n    return result;\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791436"
+  },
+  {
+    "id": "rc36",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to open a family document for editing using doc.EditFamily, use FamilyManager to add a new type parameter of type Length, set the parameter value, then close the family document and reload it into the project using LoadFamily. Write code only. No explanation.",
+    "expected_signals": [
+      "EditFamily",
+      "FamilyManager",
+      "AddParameter",
+      "FamilyDocument",
+      "LoadFamily",
+      "FamilyParameter",
+      "Set",
+      "Transaction",
+      "BuiltInParameterGroup",
+      "ParameterType"
+    ],
+    "response": "```csharp\npublic void EditFamilyAndReload(Document doc, FamilyInstance instance)\n{\n    Family family = instance.Symbol.Family;\n    Document familyDoc = doc.EditFamily(family);\n\n    if (familyDoc == null) return;\n\n    using (Transaction ftx = new Transaction(familyDoc, \"Add Parameter\"))\n    {\n        ftx.Start();\n\n        FamilyManager fm = familyDoc.FamilyManager;\n\n        FamilyParameter param = fm.AddParameter(\n            \"CustomLength\",\n            GroupTypeId.Dimensions,\n            SpecTypeId.Length,\n            true);\n\n        if (fm.CurrentType == null)\n            fm.NewType(\"Default\");\n\n        fm.Set(param, UnitUtils.ConvertToInternalUnits(500, UnitTypeId.Millimeters));\n\n        ftx.Commit();\n    }\n\n    // Reload into project\n    familyDoc.LoadFamily(doc, new FamilyLoadOptions());\n    familyDoc.Close(false);\n}\n\npublic class FamilyLoadOptions : IFamilyLoadOptions\n{\n    public bool OnFamilyFound(bool familyInUse, out bool overwriteParameterValues)\n    {\n        overwriteParameterValues = true;\n        return true;\n    }\n\n    public bool OnSharedFamilyFound(Family sharedFamily, bool familyInUse,\n        out FamilySource source, out bool overwriteParameterValues)\n    {\n        source = FamilySource.Family;\n        overwriteParameterValues = true;\n        return true;\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791437"
+  },
+  {
+    "id": "rc37",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code using a TransactionGroup to wrap multiple sub-transactions. Perform two separate modifications (e.g., move a wall then change its type), and demonstrate rolling back the entire group if the second sub-transaction fails. Include TransactionGroup.Assimilate on success. Write code only. No explanation.",
+    "expected_signals": [
+      "TransactionGroup",
+      "Transaction",
+      "Start",
+      "Commit",
+      "RollBack",
+      "Assimilate",
+      "TransactionStatus",
+      "t.Start",
+      "t.Commit"
+    ],
+    "response": "```csharp\npublic void TransactionGroupExample(Document doc, Wall wall, WallType newType)\n{\n    using (TransactionGroup txGroup = new TransactionGroup(doc, \"Grouped Operations\"))\n    {\n        txGroup.Start();\n\n        bool success = true;\n\n        // Sub-transaction 1: Move the wall\n        using (Transaction tx1 = new Transaction(doc, \"Move Wall\"))\n        {\n            tx1.Start();\n            try\n            {\n                ElementTransformUtils.MoveElement(doc, wall.Id, new XYZ(5, 0, 0));\n                tx1.Commit();\n            }\n            catch\n            {\n                tx1.RollBack();\n                success = false;\n            }\n        }\n\n        // Sub-transaction 2: Change wall type\n        if (success)\n        {\n            using (Transaction tx2 = new Transaction(doc, \"Change Wall Type\"))\n            {\n                tx2.Start();\n                try\n                {\n                    wall.WallType = newType;\n                    tx2.Commit();\n                }\n                catch\n                {\n                    tx2.RollBack();\n                    success = false;\n                }\n            }\n        }\n\n        if (success)\n        {\n            txGroup.Assimilate();\n        }\n        else\n        {\n            txGroup.RollBack();\n            TaskDialog.Show(\"Error\", \"Operation rolled back.\");\n        }\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791439"
+  },
+  {
+    "id": "rc38",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to export the active 3D view to DWG format using doc.Export. Configure DWGExportOptions with specific settings for layers, colors, and file version. Specify the output folder path and filename. Write code only. No explanation.",
+    "expected_signals": [
+      "Export",
+      "DWGExportOptions",
+      "ExportColorMode",
+      "PropOverrides",
+      "LayerMapping",
+      "FileVersion",
+      "View3D",
+      "Transaction",
+      "ViewSet"
+    ],
+    "response": "```csharp\npublic void ExportToDwg(Document doc)\n{\n    View3D view3d = new FilteredElementCollector(doc)\n        .OfClass(typeof(View3D))\n        .Cast<View3D>()\n        .FirstOrDefault(v => !v.IsTemplate);\n\n    if (view3d == null) return;\n\n    DWGExportOptions options = new DWGExportOptions();\n    options.FileVersion = ACADVersion.R2018;\n    options.ExportOfSolids = SolidGeometry.ACIS;\n    options.LayerMapping = \"AIA\";\n    options.Colors = ExportColorMode.IndexColors;\n    options.MergedViews = true;\n    options.HideUnreferenceViewTags = true;\n\n    string outputFolder = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);\n    string fileName = \"Export_\" + view3d.Name;\n\n    ICollection<ElementId> viewIds = new List<ElementId> { view3d.Id };\n\n    using (Transaction tx = new Transaction(doc, \"Export DWG\"))\n    {\n        tx.Start();\n        doc.Export(outputFolder, fileName, viewIds, options);\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791440"
+  },
+  {
+    "id": "rc39",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to find wall endpoints using LocationCurve, then use WallUtils.DisallowWallJoinAtEnd and WallUtils.AllowWallJoinAtEnd to control wall join behavior at each end. Iterate through all walls in the model and disallow joins at both ends inside a Transaction. Write code only. No explanation.",
+    "expected_signals": [
+      "WallUtils",
+      "DisallowWallJoinAtEnd",
+      "AllowWallJoinAtEnd",
+      "LocationCurve",
+      "Wall",
+      "FilteredElementCollector",
+      "Transaction",
+      "Curve",
+      "GetEndPoint"
+    ],
+    "response": "```csharp\npublic void DisableAllWallJoins(Document doc)\n{\n    var walls = new FilteredElementCollector(doc)\n        .OfClass(typeof(Wall))\n        .WhereElementIsNotElementType()\n        .Cast<Wall>()\n        .ToList();\n\n    using (Transaction tx = new Transaction(doc, \"Disable Wall Joins\"))\n    {\n        tx.Start();\n\n        foreach (Wall wall in walls)\n        {\n            LocationCurve locCurve = wall.Location as LocationCurve;\n            if (locCurve == null) continue;\n\n            WallUtils.DisallowWallJoinAtEnd(wall, 0);\n            WallUtils.DisallowWallJoinAtEnd(wall, 1);\n        }\n\n        tx.Commit();\n    }\n}\n```",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791442"
+  },
+  {
+    "id": "rc40",
+    "domain": "revit_csharp",
+    "difficulty": "hard",
+    "question": "Write C# code to build a chained logical filter combining an ElementCategoryFilter for walls, an ElementParameterFilter on the Comments parameter, and a BoundingBoxIntersectsFilter with a specified Outline. Combine them using LogicalAndFilter and apply to a FilteredElementCollector. Write code only. No explanation.",
+    "expected_signals": [
+      "LogicalAndFilter",
+      "ElementCategoryFilter",
+      "ElementParameterFilter",
+      "BoundingBoxIntersectsFilter",
+      "Outline",
+      "FilteredElementCollector",
+      "BuiltInCategory.OST_Walls",
+      "ParameterFilterRuleFactory",
+      "XYZ"
+    ],
+    "response": "```csharp\npublic List<Element> GetFilteredWalls(Document doc)\n{\n    // Filter 1: Category filter for walls\n    ElementCategoryFilter categoryFilter =\n        new ElementCategoryFilter(BuiltInCategory.OST_Walls);\n\n    // Filter 2: Parameter filter on Comments\n    ElementId commentsId = new ElementId(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS);\n    FilterRule rule = ParameterFilterRuleFactory.CreateContainsRule(\n        commentsId, \"Structural\", false);\n    ElementParameterFilter paramFilter = new ElementParameterFilter(rule);\n\n    // Filter 3: Bounding box intersects filter\n    XYZ min = new XYZ(-100, -100, -10);\n    XYZ max = new XYZ(100, 100, 50);\n    Outline outline = new Outline(min, max);\n    BoundingBoxIntersectsFilter bboxFilter = new BoundingBoxIntersectsFilter(outline);\n\n    // Chain with LogicalAndFilter\n    LogicalAndFilter combinedFilter1 = new LogicalAndFilter(categoryFilter, paramFilter);\n    LogicalAndFilter combinedFilter2 = new LogicalAndFilter(combinedFilter1, bboxFilter);\n\n    List<Element> result = new FilteredElementCollector(doc)\n        .WhereElementIsNotElementType()\n        .WherePasses(combinedFilter2)\n        .ToElements()\n        .ToList();\n\n    return result;\n}\n```\n\nConfidence is high on these. The only one I'd sanity-check is rc36, specifically the `GroupTypeId.Dimensions` and `SpecTypeId.Length` parameter for `FamilyManager.AddParameter` since that signature changed between Revit 2022 and 2025 with the ForgeTypeId migration.",
+    "model": "claude-opus-4-6",
+    "timestamp": "2026-03-01T20:06:48.791443"
+  }
+]
